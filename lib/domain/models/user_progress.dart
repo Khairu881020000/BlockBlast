@@ -5,6 +5,7 @@ class UserProgress {
     required this.unlockedLevels,
     required this.bestScore,
     required this.bestTimeSeconds,
+    this.endlessHighestScore = 0,
   });
 
   final int currentLevel;
@@ -12,6 +13,7 @@ class UserProgress {
   final int unlockedLevels;
   final Map<int, int> bestScore;
   final Map<int, int> bestTimeSeconds;
+  final int endlessHighestScore;
 
   UserProgress copyWith({
     int? currentLevel,
@@ -19,6 +21,7 @@ class UserProgress {
     int? unlockedLevels,
     Map<int, int>? bestScore,
     Map<int, int>? bestTimeSeconds,
+    int? endlessHighestScore,
   }) {
     return UserProgress(
       currentLevel: currentLevel ?? this.currentLevel,
@@ -26,7 +29,7 @@ class UserProgress {
       unlockedLevels: unlockedLevels ?? this.unlockedLevels,
       bestScore: bestScore ?? this.bestScore,
       bestTimeSeconds: bestTimeSeconds ?? this.bestTimeSeconds,
+      endlessHighestScore: endlessHighestScore ?? this.endlessHighestScore,
     );
   }
-
 }

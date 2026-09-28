@@ -22,6 +22,7 @@ class GameViewModelState {
   final bool isRandomMode;
   final String? randomDifficulty;
   final String? error;
+  final int highestScore;
 
   final int lastClearedLines;
   final int lastMoveScore;
@@ -51,6 +52,7 @@ class GameViewModelState {
     this.clearingRows = const {},
     this.clearingCols = const {},
     this.isAnimating = false,
+    this.highestScore = 0,
   });
 
   GameViewModelState copyWith({
@@ -74,6 +76,7 @@ class GameViewModelState {
     Set<int>? clearingRows,
     Set<int>? clearingCols,
     bool? isAnimating,
+    int? highestScore,
   }) {
     return GameViewModelState(
       level: level ?? this.level,
@@ -96,6 +99,7 @@ class GameViewModelState {
       clearingRows: clearingRows ?? this.clearingRows,
       clearingCols: clearingCols ?? this.clearingCols,
       isAnimating: isAnimating ?? this.isAnimating,
+      highestScore: highestScore ?? this.highestScore,
     );
   }
 }
@@ -109,28 +113,35 @@ class GameViewModel extends StateNotifier<GameViewModelState> {
   final ProgressRepository progressRepository;
   final LevelGenerator levelGenerator;
 
-  void loadLevel(int levelNumber) {
+  Future<void> loadLevel(int levelNumber) async {
     state = state.copyWith(isLoading: true);
     try {
+      final progress = await progressRepository.getProgress();
       final level = levelGenerator.generate(levelNumber);
-      _setupLevel(level, isRandom: false);
+      _setupLevel(level, isRandom: false, highestScore: progress.highestScore);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: 'Failed to load level: $e');
     }
   }
 
-  void loadRandomLevel(String difficulty, {int gridSize = 8}) {
+  Future<void> loadRandomLevel(String difficulty, {int gridSize = 8}) async {
     state = state.copyWith(isLoading: true);
     try {
+      final progress = await progressRepository.getProgress();
       final seed = DateTime.now().millisecondsSinceEpoch;
       final level = levelGenerator.generateRandom(gridSize: gridSize, seed: seed);
-      _setupLevel(level, isRandom: true, difficulty: difficulty);
+      _setupLevel(level, isRandom: true, difficulty: difficulty, highestScore: progress.endlessHighestScore);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: 'Failed to generate level: $e');
     }
   }
 
-  void _setupLevel(GameLevel level, {required bool isRandom, String? difficulty}) {
+  void _setupLevel(
+    GameLevel level, {
+    required bool isRandom,
+    String? difficulty,
+    int highestScore = 0,
+  }) {
     final board = List.generate(
       level.gridSize,
       (r) => List<int>.from(level.initialGrid[r]),
@@ -163,6 +174,7 @@ class GameViewModel extends StateNotifier<GameViewModelState> {
       isLoading: false,
       isRandomMode: isRandom,
       randomDifficulty: difficulty,
+      highestScore: highestScore,
     );
   }
 
@@ -232,6 +244,10 @@ class GameViewModel extends StateNotifier<GameViewModelState> {
     final newPieceColors = List<int>.from(state.pieceColors);
 
     final newTotalClears = state.totalClears + clearedLines;
+    final intermediateHighest = newScore > state.highestScore ? newScore : state.highestScore;
+    if (state.isRandomMode && intermediateHighest > state.highestScore) {
+      progressRepository.saveEndlessHighScore(intermediateHighest);
+    }
 
     if (clearedLines > 0) {
       state = state.copyWith(
@@ -239,6 +255,7 @@ class GameViewModel extends StateNotifier<GameViewModelState> {
         availablePieces: newPieces,
         pieceColors: newPieceColors,
         score: newScore,
+        highestScore: intermediateHighest,
         comboCount: currentCombo,
         totalClears: newTotalClears,
         isComplete: false,
@@ -298,6 +315,10 @@ class GameViewModel extends StateNotifier<GameViewModelState> {
         }
 
         final finalScore = newScore + extraGemBonus;
+        final finalHighest = finalScore > intermediateHighest ? finalScore : intermediateHighest;
+        if (state.isRandomMode && finalHighest > intermediateHighest) {
+          progressRepository.saveEndlessHighScore(finalHighest);
+        }
         bool isComplete = false;
         final level = state.level;
         if (level != null && !state.isRandomMode) {
@@ -317,6 +338,7 @@ class GameViewModel extends StateNotifier<GameViewModelState> {
           availablePieces: newPieces,
           pieceColors: newPieceColors,
           score: finalScore,
+          highestScore: finalHighest,
           remainingFrozen: remFrozen,
           remainingGems: remGems,
           isComplete: isComplete,
@@ -354,6 +376,7 @@ class GameViewModel extends StateNotifier<GameViewModelState> {
         availablePieces: newPieces,
         pieceColors: newPieceColors,
         score: newScore,
+        highestScore: intermediateHighest,
         comboCount: currentCombo,
         totalClears: newTotalClears,
         isComplete: isComplete,
@@ -373,7 +396,12 @@ class GameViewModel extends StateNotifier<GameViewModelState> {
 
   void resetLevel() {
     if (state.level != null) {
-      _setupLevel(state.level!, isRandom: state.isRandomMode, difficulty: state.randomDifficulty);
+      _setupLevel(
+        state.level!,
+        isRandom: state.isRandomMode,
+        difficulty: state.randomDifficulty,
+        highestScore: state.highestScore,
+      );
     }
   }
 

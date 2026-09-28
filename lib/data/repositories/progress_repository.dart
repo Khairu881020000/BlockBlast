@@ -11,6 +11,7 @@ class ProgressRepository extends ChangeNotifier {
     final box = hiveService.progressBox;
     final currentLevel = box.get('currentLevel', defaultValue: 1) as int;
     final highestScore = box.get('highestScore', defaultValue: 0) as int;
+    final endlessHighestScore = box.get('endlessHighestScore', defaultValue: highestScore) as int;
     final unlockedLevels = box.get('unlockedLevels', defaultValue: 1) as int;
     
     final rawBestScore = box.get('bestScore', defaultValue: <dynamic, dynamic>{});
@@ -29,6 +30,7 @@ class ProgressRepository extends ChangeNotifier {
       unlockedLevels: unlockedLevels,
       bestScore: bestScore,
       bestTimeSeconds: bestTimeSeconds,
+      endlessHighestScore: endlessHighestScore,
     );
   }
 
@@ -36,10 +38,23 @@ class ProgressRepository extends ChangeNotifier {
     final box = hiveService.progressBox;
     await box.put('currentLevel', progress.currentLevel);
     await box.put('highestScore', progress.highestScore);
+    await box.put('endlessHighestScore', progress.endlessHighestScore);
     await box.put('unlockedLevels', progress.unlockedLevels);
     await box.put('bestScore', progress.bestScore);
     await box.put('bestTimeSeconds', progress.bestTimeSeconds);
     notifyListeners();
+  }
+
+  Future<void> saveEndlessHighScore(int score) async {
+    final current = await getProgress();
+    if (score > current.endlessHighestScore) {
+      final newHighestScore = score > current.highestScore ? score : current.highestScore;
+      final updated = current.copyWith(
+        endlessHighestScore: score,
+        highestScore: newHighestScore,
+      );
+      await saveProgress(updated);
+    }
   }
 
   Future<void> saveLevelCompletion({

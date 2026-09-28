@@ -105,6 +105,129 @@ class BlockShape {
     [1, 1, 1],
     [0, 1, 0]
   ]);
+  static final BlockShape tLeft = BlockShape(matrix: [
+    [0, 1],
+    [1, 1],
+    [0, 1]
+  ]);
+  static final BlockShape tRight = BlockShape(matrix: [
+    [1, 0],
+    [1, 1],
+    [1, 0]
+  ]);
+
+  static final BlockShape sH = BlockShape(matrix: [
+    [0, 1, 1],
+    [1, 1, 0]
+  ]);
+  static final BlockShape sV = BlockShape(matrix: [
+    [1, 0],
+    [1, 1],
+    [0, 1]
+  ]);
+
+  static final BlockShape zH = BlockShape(matrix: [
+    [1, 1, 0],
+    [0, 1, 1]
+  ]);
+  static final BlockShape zV = BlockShape(matrix: [
+    [0, 1],
+    [1, 1],
+    [1, 0]
+  ]);
+
+  static final BlockShape lUp = BlockShape(matrix: [
+    [1, 0],
+    [1, 0],
+    [1, 1]
+  ]);
+  static final BlockShape lDown = BlockShape(matrix: [
+    [1, 1],
+    [0, 1],
+    [0, 1]
+  ]);
+  static final BlockShape lLeft = BlockShape(matrix: [
+    [1, 1, 1],
+    [1, 0, 0]
+  ]);
+  static final BlockShape lRight = BlockShape(matrix: [
+    [0, 0, 1],
+    [1, 1, 1]
+  ]);
+
+  static final BlockShape jUp = BlockShape(matrix: [
+    [0, 1],
+    [0, 1],
+    [1, 1]
+  ]);
+  static final BlockShape jDown = BlockShape(matrix: [
+    [1, 1],
+    [1, 0],
+    [1, 0]
+  ]);
+  static final BlockShape jLeft = BlockShape(matrix: [
+    [1, 0, 0],
+    [1, 1, 1]
+  ]);
+  static final BlockShape jRight = BlockShape(matrix: [
+    [1, 1, 1],
+    [0, 0, 1]
+  ]);
+
+  static final BlockShape rect2x3 = BlockShape(matrix: [
+    [1, 1, 1],
+    [1, 1, 1]
+  ]);
+  static final BlockShape rect3x2 = BlockShape(matrix: [
+    [1, 1],
+    [1, 1],
+    [1, 1]
+  ]);
+
+  static final BlockShape plus = BlockShape(matrix: [
+    [0, 1, 0],
+    [1, 1, 1],
+    [0, 1, 0]
+  ]);
+
+  static final BlockShape diag2TLBR = BlockShape(matrix: [
+    [1, 0],
+    [0, 1]
+  ]);
+  static final BlockShape diag2TRBL = BlockShape(matrix: [
+    [0, 1],
+    [1, 0]
+  ]);
+
+  static final BlockShape diag3TLBR = BlockShape(matrix: [
+    [1, 0, 0],
+    [0, 1, 0],
+    [0, 0, 1]
+  ]);
+  static final BlockShape diag3TRBL = BlockShape(matrix: [
+    [0, 0, 1],
+    [0, 1, 0],
+    [1, 0, 0]
+  ]);
+
+  static final BlockShape uUp = BlockShape(matrix: [
+    [1, 0, 1],
+    [1, 1, 1]
+  ]);
+  static final BlockShape uDown = BlockShape(matrix: [
+    [1, 1, 1],
+    [1, 0, 1]
+  ]);
+  static final BlockShape uLeft = BlockShape(matrix: [
+    [1, 1],
+    [0, 1],
+    [1, 1]
+  ]);
+  static final BlockShape uRight = BlockShape(matrix: [
+    [1, 1],
+    [1, 0],
+    [1, 1]
+  ]);
 
   static final List<BlockShape> allShapes = [
     single,
@@ -113,7 +236,15 @@ class BlockShape {
     square2x2, square3x3,
     l2x2TL, l2x2TR, l2x2BL, l2x2BR,
     l3x3TL, l3x3TR, l3x3BL, l3x3BR,
-    tUp, tDown,
+    tUp, tDown, tLeft, tRight,
+    sH, sV, zH, zV,
+    lUp, lDown, lLeft, lRight,
+    jUp, jDown, jLeft, jRight,
+    rect2x3, rect3x2,
+    plus,
+    diag2TLBR, diag2TRBL,
+    diag3TLBR, diag3TRBL,
+    uUp, uDown, uLeft, uRight,
   ];
 }
 

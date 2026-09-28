@@ -308,6 +308,10 @@ class _GameViewState extends ConsumerState<GameView>
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   _animatedStat('SCORE', state.score, Icons.stars_rounded),
+                  if (state.isRandomMode) ...[
+                    _verticalDivider(),
+                    _animatedStat('HIGHEST', state.highestScore, Icons.emoji_events_rounded),
+                  ],
                   if (!state.isRandomMode) ...[
                     _verticalDivider(),
                     _stat('TARGET', '${level.targetScore}', Icons.flag_rounded),
@@ -1050,12 +1054,35 @@ class _GameViewState extends ConsumerState<GameView>
                   ),
                 ),
               ),
+              if (state.isRandomMode) ...[
+                const SizedBox(height: 4),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    'Highest Score: ${state.highestScore}',
+                    style: const TextStyle(
+                      color: AppColors.subtext,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 24),
               TangibleButton(
                 text: 'Try Again',
                 onPressed: () {
                   Navigator.pop(context);
                   ref.read(gameViewModelProvider.notifier).resetLevel();
+                },
+              ),
+              const SizedBox(height: 12),
+              TangibleButton(
+                text: 'Home',
+                isSecondary: true,
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.pop(context);
                 },
               ),
             ],
