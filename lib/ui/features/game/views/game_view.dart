@@ -296,33 +296,45 @@ class _GameViewState extends ConsumerState<GameView>
       builder: (context, constraints) {
         return Column(
           children: [
-            Container(
-              margin: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.white24, width: 1.0),
-              ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _animatedStat('SCORE', state.score, Icons.stars_rounded),
-                  if (state.isRandomMode) ...[
-                    _verticalDivider(),
-                    _animatedStat('HIGHEST', state.highestScore, Icons.emoji_events_rounded),
-                  ],
-                  if (!state.isRandomMode) ...[
-                    _verticalDivider(),
-                    _stat('TARGET', '${level.targetScore}', Icons.flag_rounded),
-                    if (level.targetFrozen > 0 || level.targetGems > 0) ...[
-                      _verticalDivider(),
-                      _objectiveStat(
-                        'GOALS',
-                        frozen: state.remainingFrozen,
-                        gems: state.remainingGems,
+                  Expanded(
+                    child: _animatedStat(
+                      'SCORE',
+                      state.score,
+                      Icons.stars_rounded,
+                      iconColor: const Color(0xFFFFCC00),
+                    ),
+                  ),
+                  if (state.isRandomMode)
+                    Expanded(
+                      child: _animatedStat(
+                        'HIGHEST',
+                        state.highestScore,
+                        Icons.emoji_events_rounded,
+                        iconColor: const Color(0xFFFFB703),
                       ),
-                    ],
+                    ),
+                  if (!state.isRandomMode) ...[
+                    Expanded(
+                      child: _targetStat(
+                        'TARGET',
+                        level.targetScore,
+                        isReached: state.score >= level.targetScore,
+                      ),
+                    ),
+                    if (level.targetFrozen > 0 || level.targetGems > 0)
+                      Expanded(
+                        child: _objectiveStat(
+                          'GOALS',
+                          targetFrozen: level.targetFrozen,
+                          targetGems: level.targetGems,
+                          remainingFrozen: state.remainingFrozen,
+                          remainingGems: state.remainingGems,
+                        ),
+                      ),
                   ],
                 ],
               ),
@@ -598,8 +610,9 @@ class _GameViewState extends ConsumerState<GameView>
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: List.generate(3, (pIdx) {
                   final piece = state.availablePieces[pIdx];
-                  if (piece == null)
+                  if (piece == null) {
                     return const Expanded(child: SizedBox.shrink());
+                  }
 
                   final colorIdx = state.pieceColors[pIdx];
                   final color = AppColors
@@ -849,12 +862,33 @@ class _GameViewState extends ConsumerState<GameView>
     );
   }
 
-  Widget _animatedStat(String label, int targetValue, IconData icon) {
+  Widget _animatedStat(
+    String label,
+    int targetValue,
+    IconData icon, {
+    Color iconColor = AppColors.subtext,
+  }) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 18, color: AppColors.headingDark),
-        const SizedBox(height: 6),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 13, color: iconColor),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: const TextStyle(
+                color: AppColors.subtext,
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.8,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 3),
         TweenAnimationBuilder<double>(
           tween: Tween<double>(begin: 0.0, end: targetValue.toDouble()),
           duration: const Duration(milliseconds: 400),
@@ -866,56 +900,75 @@ class _GameViewState extends ConsumerState<GameView>
                 '${val.toInt()}',
                 style: const TextStyle(
                   color: AppColors.headingDark,
-                  fontSize: 22,
+                  fontSize: 26,
                   fontWeight: FontWeight.w800,
                 ),
               ),
             );
           },
         ),
-        const SizedBox(height: 2),
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text(
-            label,
-            style: const TextStyle(
-              color: AppColors.subtext,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
       ],
     );
   }
 
-  Widget _stat(String label, String value, IconData icon) {
+  Widget _targetStat(
+    String label,
+    int targetScore, {
+    required bool isReached,
+  }) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 18, color: AppColors.headingDark),
-        const SizedBox(height: 6),
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text(
-            value,
-            style: const TextStyle(
-              color: AppColors.headingDark,
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.flag_rounded,
+              size: 13,
+              color: isReached
+                  ? const Color(0xFF34C759)
+                  : const Color(0xFFFF9500),
             ),
-          ),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: isReached
+                    ? const Color(0xFF34C759)
+                    : AppColors.subtext,
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.8,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 2),
+        const SizedBox(height: 3),
         FittedBox(
           fit: BoxFit.scaleDown,
-          child: Text(
-            label,
-            style: const TextStyle(
-              color: AppColors.subtext,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (isReached) ...[
+                const Icon(
+                  Icons.check_circle_rounded,
+                  size: 16,
+                  color: Color(0xFF34C759),
+                ),
+                const SizedBox(width: 4),
+              ],
+              Text(
+                '$targetScore',
+                style: TextStyle(
+                  color: isReached
+                      ? const Color(0xFF34C759)
+                      : AppColors.headingDark,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -924,81 +977,118 @@ class _GameViewState extends ConsumerState<GameView>
 
   Widget _objectiveStat(
     String label, {
-    required int frozen,
-    required int gems,
+    required int targetFrozen,
+    required int targetGems,
+    required int remainingFrozen,
+    required int remainingGems,
   }) {
+    final bool allDone = (targetFrozen == 0 || remainingFrozen == 0) &&
+        (targetGems == 0 || remainingGems == 0);
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Row(
           mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            if (frozen > 0) ...[
-              const Icon(
-                Icons.ac_unit_rounded,
-                size: 16,
-                color: Color(0xFF00B4D8),
+            Icon(
+              Icons.track_changes_rounded,
+              size: 13,
+              color: allDone ? const Color(0xFF34C759) : AppColors.subtext,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: allDone ? const Color(0xFF34C759) : AppColors.subtext,
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.8,
               ),
-              const SizedBox(width: 2),
-              Text(
-                '$frozen',
-                style: const TextStyle(
-                  color: AppColors.headingDark,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              if (gems > 0) const SizedBox(width: 6),
-            ] else if (frozen == 0) ...[
-              const Icon(
-                Icons.check_circle_rounded,
-                size: 16,
-                color: Colors.green,
-              ),
-              if (gems > 0) const SizedBox(width: 6),
-            ],
-            if (gems > 0) ...[
-              const Icon(
-                Icons.diamond_rounded,
-                size: 16,
-                color: Color(0xFFFFB703),
-              ),
-              const SizedBox(width: 2),
-              Text(
-                '$gems',
-                style: const TextStyle(
-                  color: AppColors.headingDark,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ] else if (gems == 0) ...[
-              const Icon(
-                Icons.check_circle_rounded,
-                size: 16,
-                color: Colors.green,
-              ),
-            ],
+            ),
           ],
         ),
-        const SizedBox(height: 2),
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text(
-            label,
-            style: const TextStyle(
-              color: AppColors.subtext,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
+        const SizedBox(height: 3),
+        if (allDone)
+          const FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.check_circle_rounded,
+                  size: 18,
+                  color: Color(0xFF34C759),
+                ),
+                SizedBox(width: 4),
+                Text(
+                  'DONE',
+                  style: TextStyle(
+                    color: Color(0xFF34C759),
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (targetFrozen > 0) ...[
+                  Icon(
+                    remainingFrozen == 0
+                        ? Icons.check_circle_rounded
+                        : Icons.ac_unit_rounded,
+                    size: 16,
+                    color: remainingFrozen == 0
+                        ? const Color(0xFF34C759)
+                        : const Color(0xFF00B4D8),
+                  ),
+                  const SizedBox(width: 3),
+                  Text(
+                    '$remainingFrozen',
+                    style: TextStyle(
+                      color: remainingFrozen == 0
+                          ? const Color(0xFF34C759)
+                          : AppColors.headingDark,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  if (targetGems > 0) const SizedBox(width: 8),
+                ],
+                if (targetGems > 0) ...[
+                  Icon(
+                    remainingGems == 0
+                        ? Icons.check_circle_rounded
+                        : Icons.diamond_rounded,
+                    size: 16,
+                    color: remainingGems == 0
+                        ? const Color(0xFF34C759)
+                        : const Color(0xFFFFB703),
+                  ),
+                  const SizedBox(width: 3),
+                  Text(
+                    '$remainingGems',
+                    style: TextStyle(
+                      color: remainingGems == 0
+                          ? const Color(0xFF34C759)
+                          : AppColors.headingDark,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
-        ),
       ],
     );
-  }
-
-  Widget _verticalDivider() {
-    return Container(width: 1.0, height: 30, color: AppColors.gridLines);
   }
 
   Future<void> _onLevelComplete(GameViewModelState state) async {
@@ -1307,8 +1397,9 @@ class _ShatterParticleOverlayState extends State<ShatterParticleOverlay>
 
   @override
   Widget build(BuildContext context) {
-    if (!_controller.isAnimating || _fragments.isEmpty)
+    if (!_controller.isAnimating || _fragments.isEmpty) {
       return const SizedBox.shrink();
+    }
     return LayoutBuilder(
       builder: (context, constraints) {
         return CustomPaint(

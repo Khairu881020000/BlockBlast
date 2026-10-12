@@ -180,11 +180,27 @@ class GameViewModel extends StateNotifier<GameViewModelState> {
 
   List<BlockShape> _generateSolvable3Pieces(List<List<int>> currentBoard) {
     final random = Random();
-    for (int attempt = 0; attempt < 30; attempt++) {
+    for (int attempt = 0; attempt < 50; attempt++) {
       final pieces = List.generate(3, (_) {
         return BlockShape.allShapes[random.nextInt(BlockShape.allShapes.length)];
       });
-      if (BlockBlastRules.canAnyPieceBePlaced(currentBoard, pieces)) {
+      if (BlockBlastRules.canSolvePieces(currentBoard, pieces)) {
+        return pieces;
+      }
+    }
+    final fallbackShapes = [
+      BlockShape.single,
+      BlockShape.line2H,
+      BlockShape.line2V,
+      BlockShape.square2x2,
+      BlockShape.line3H,
+      BlockShape.line3V,
+    ];
+    for (int attempt = 0; attempt < 50; attempt++) {
+      final pieces = List.generate(3, (_) {
+        return fallbackShapes[random.nextInt(fallbackShapes.length)];
+      });
+      if (BlockBlastRules.canSolvePieces(currentBoard, pieces)) {
         return pieces;
       }
     }
