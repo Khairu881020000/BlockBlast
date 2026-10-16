@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -92,6 +93,7 @@ class _GameViewState extends ConsumerState<GameView>
   @override
   void initState() {
     super.initState();
+    FlameAudio.audioCache.loadAll(['place.mp3', 'clear.mp3']);
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
@@ -125,7 +127,11 @@ class _GameViewState extends ConsumerState<GameView>
       } else if (next.isGameOver && !(prev?.isGameOver ?? false)) {
         _onGameOver(next);
       } else if (next.lastClearedLines > 0 &&
-          next.lastClearedLines != (prev?.lastClearedLines ?? 0)) {
+          (next.lastClearedLines != (prev?.lastClearedLines ?? 0) ||
+              next.totalClears != (prev?.totalClears ?? 0))) {
+        if (ref.read(soundSettingsProvider)) {
+          FlameAudio.play('clear.mp3');
+        }
         HapticFeedback.heavyImpact();
         _shakeController.shake();
         _shatterKey.currentState?.triggerShatter(
@@ -573,6 +579,9 @@ class _GameViewState extends ConsumerState<GameView>
                                             c,
                                           );
                                       if (placed) {
+                                        if (ref.read(soundSettingsProvider)) {
+                                          FlameAudio.play('place.mp3');
+                                        }
                                         setState(() {
                                           _selectedPieceIndex = null;
                                           _hoveredStartRow = null;
@@ -676,6 +685,9 @@ class _GameViewState extends ConsumerState<GameView>
                                       _hoveredStartCol!,
                                     );
                                 if (placed) {
+                                  if (ref.read(soundSettingsProvider)) {
+                                    FlameAudio.play('place.mp3');
+                                  }
                                   HapticFeedback.mediumImpact();
                                 }
                               }
@@ -1198,20 +1210,6 @@ class _GameViewState extends ConsumerState<GameView>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white24, width: 1.0),
-                ),
-                child: const Icon(
-                  Icons.emoji_events_rounded,
-                  color: AppColors.primary,
-                  size: 56,
-                ),
-              ),
-              const SizedBox(height: 20),
               const FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Text(

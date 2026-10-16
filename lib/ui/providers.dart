@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive/hive.dart';
 import 'package:blockblast/data/repositories/progress_repository.dart';
 import 'package:blockblast/data/services/hive_service.dart';
 import 'package:blockblast/domain/use_cases/level_generator.dart';
@@ -33,3 +34,39 @@ final gameViewModelProvider =
         levelGenerator: levelGenerator,
       );
     });
+
+class SoundSettingsNotifier extends StateNotifier<bool> {
+  SoundSettingsNotifier(this._hiveService)
+      : super(_loadInitial(_hiveService));
+
+  final HiveService _hiveService;
+
+  static bool _loadInitial(HiveService hiveService) {
+    try {
+      if (Hive.isBoxOpen(HiveService.progressBoxName)) {
+        return hiveService.progressBox.get('soundEnabled', defaultValue: true) as bool;
+      }
+    } catch (_) {}
+    return true;
+  }
+
+  Future<void> toggle() async {
+    await setSoundEnabled(!state);
+  }
+
+  Future<void> setSoundEnabled(bool value) async {
+    state = value;
+    try {
+      if (Hive.isBoxOpen(HiveService.progressBoxName)) {
+        await _hiveService.progressBox.put('soundEnabled', value);
+      }
+    } catch (_) {}
+  }
+}
+
+final soundSettingsProvider =
+    StateNotifierProvider<SoundSettingsNotifier, bool>((ref) {
+  final hiveService = ref.watch(hiveServiceProvider);
+  return SoundSettingsNotifier(hiveService);
+});
+

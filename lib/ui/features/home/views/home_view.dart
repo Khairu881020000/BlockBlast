@@ -6,6 +6,7 @@ import 'package:blockblast/ui/core/theme/app_colors.dart';
 import 'package:blockblast/ui/core/widgets/tangible_button.dart';
 import 'package:blockblast/ui/features/game/views/game_view.dart';
 import 'package:blockblast/ui/features/level_select/views/level_select_view.dart';
+import 'package:blockblast/ui/features/settings/views/settings_view.dart';
 import 'package:blockblast/ui/features/support/views/support_view.dart';
 import 'package:blockblast/ui/providers.dart';
 
@@ -263,6 +264,21 @@ class _HomeViewState extends ConsumerState<HomeView> {
                           text: 'Endless Mode',
                           isSecondary: true,
                           onPressed: () => _showGridSizeDialog(context),
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        TangibleButton(
+                          text: 'Settings',
+                          isSecondary: true,
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const SettingsView(),
+                              ),
+                            );
+                          },
                         ),
                         const Spacer(),
                       ],
