@@ -35,9 +35,6 @@ class _HomeViewState extends ConsumerState<HomeView> {
         },
       ),
     )..load();
-  @override
-  void initState() {
-    super.initState();
     Future.microtask(
       () => ref.read(homeViewModelProvider.notifier).loadProgress(),
     );
