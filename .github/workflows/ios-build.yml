@@ -1,0 +1,49 @@
+name: Build KHAIRUL GAME for iOS
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-ios:
+    name: Build iOS (unsigned)
+    runs-on: macos-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Generate iOS platform files if missing
+        run: flutter create --platforms=ios --org com.khairulgame .
+
+      - name: Add Google Mobile Ads Flutter plugin
+        run: flutter pub add google_mobile_ads
+
+      - name: Configure AdMob iOS App ID
+        run: |
+          /usr/libexec/PlistBuddy -c "Set :GADApplicationIdentifier ca-app-pub-6620088049494024~8896826047" ios/Runner/Info.plist 2>/dev/null || /usr/libexec/PlistBuddy -c "Add :GADApplicationIdentifier string ca-app-pub-6620088049494024~8896826047" ios/Runner/Info.plist
+
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      - name: Build iOS app without code signing
+        run: flutter build ios --release --no-codesign
+
+      - name: Package unsigned app artifact
+        run: |
+          cd build/ios/iphoneos
+          zip -r "$GITHUB_WORKSPACE/KHAIRUL-GAME-iOS-unsigned.zip" Runner.app
+
+      - name: Upload iOS build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: KHAIRUL-GAME-iOS-unsigned
+          path: KHAIRUL-GAME-iOS-unsigned.zip
+          if-no-files-found: error
