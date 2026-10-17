@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -18,12 +19,34 @@ class HomeView extends ConsumerStatefulWidget {
 }
 
 class _HomeViewState extends ConsumerState<HomeView> {
+  BannerAd? _bannerAd;
+
+  @override
+  void initState() {
+    super.initState();
+    _bannerAd = BannerAd(
+      adUnitId: 'ca-app-pub-6620088049494024/8395842172',
+      request: const AdRequest(),
+      size: AdSize.banner,
+      listener: BannerAdListener(
+        onAdFailedToLoad: (ad, error) {
+          ad.dispose();
+          if (mounted) setState(() => _bannerAd = null);
+        },
+      ),
+    )..load();
   @override
   void initState() {
     super.initState();
     Future.microtask(
       () => ref.read(homeViewModelProvider.notifier).loadProgress(),
     );
+  }
+
+  @override
+  void dispose() {
+    _bannerAd?.dispose();
+    super.dispose();
   }
 
   Future<void> _launchUrl(String urlString) async {
@@ -120,6 +143,15 @@ class _HomeViewState extends ConsumerState<HomeView> {
 
     return Scaffold(
       backgroundColor: AppColors.bg,
+      bottomNavigationBar: _bannerAd == null
+          ? null
+          : SafeArea(
+              child: SizedBox(
+                width: _bannerAd!.size.width.toDouble(),
+                height: _bannerAd!.size.height.toDouble(),
+                child: AdWidget(ad: _bannerAd!),
+              ),
+            ),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
